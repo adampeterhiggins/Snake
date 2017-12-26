@@ -4,7 +4,7 @@ from random import randint
 from math import * 
 import numpy as np
 
-PixelSize = 40 #Half width of square pixels (shouldn't be lower than 8)
+PixelSize = 8 #Half width of square pixels (shouldn't be lower than 8)
 NumOfPixels = 12 #Number of pixels creating the square canvas (shouldn't be lower than 12)
 Delay = 100 #Delay between refresh of canvas in miliseconds, the lower the delay, the more difficult the game is 
 
@@ -16,12 +16,13 @@ CanvasCenter = [grid[CenterIndex],grid[CenterIndex]]
 BelowCenter = [grid[CenterIndex],grid[CenterIndex + 1]] #One line below the center 
 
 InitialBodyArray = [[CenterIndex, CenterIndex]] #Initial posistion of snake 
+InitialBodyLength = 1
 InitialDirection = np.array([1,0])
 
 global Direction, BodyArray, BodyLength, DeathValue
 Direction = InitialDirection
 BodyArray = InitialBodyArray #Places snake in itial posistion 
-BodyLength = 1
+BodyLength = InitialBodyLength
 DeathValue = 1 #DeathValue Determines if the canvas is in "game" mode or in "Splashscreen mode", 1 for Splashscreen, 0 for game 
 
 tk = Tk()
@@ -38,13 +39,31 @@ def turn(dir):
     if np.array_equal(dir,(-1)*Direction) == False: #Don't allow snake to reverse direction
 	    Direction = dir
 
+def EdgeDetection(): #Loops the canvas
+	global BodyArray
+	for i, coords in enumerate(BodyArray):
+		x_pos = coords[0]
+		y_pos = coords[1]
+		if x_pos > NumOfPixels-1:
+			x_pos = 0
+			BodyArray[i] = np.array([x_pos,y_pos])
+		elif x_pos < 0:
+			x_pos = NumOfPixels-1
+			BodyArray[i] = np.array([x_pos,y_pos])
+		if y_pos > NumOfPixels-1:
+			y_pos = 0
+			BodyArray[i] = np.array([x_pos,y_pos])
+		elif y_pos < 0:
+			y_pos = NumOfPixels-1
+			BodyArray[i] = np.array([x_pos,y_pos])
+
 def UpdateBody():
 	global BodyArray
 	oldPos = BodyArray[-1]
 	newPos = oldPos + Direction
 	BodyArray = BodyArray + [newPos]
 	while len(BodyArray) > BodyLength:
-		BodyArray = [x % NumOfPixels for x in BodyArray[1:]] # Using mod NumOfPixels so that the snake loops around the canvas, the % operation works because elements of BodyArray as numpy arrays
+		BodyArray = BodyArray[1:]
 
 def UpdateBodyLength(parity): #Updates length of body by parity 
 	global BodyLength
@@ -117,9 +136,10 @@ def loop():
 	canvas.delete('all')
 	CheckToken()
 	UpdateBody()
+	EdgeDetection()
 	DrawBackground()
-	DrawToken()
 	DrawBody()
+	DrawToken()
 	CheckDead()
 	if DeathValue == 0: #Iterate loop only when not dead
 		canvas.after(Delay,loop)  
@@ -128,7 +148,7 @@ def begin(event):
 	global TokenCoords, DeathValue, BodyArray, BodyLength, Direction
 	if DeathValue == 1: #When dead, reset variables to initial state, regenerate token
 		BodyArray = InitialBodyArray
-		BodyLength = 1
+		BodyLength = InitialBodyLength
 		Direction = InitialDirection
 		TokenCoords = GenerateTokenCoord()
 		DeathValue = 0
