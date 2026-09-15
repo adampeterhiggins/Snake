@@ -1,0 +1,27 @@
+[project]
+name = "snake"
+version = "0.1.0"
+description = "A small Tkinter snake game"
+requires-python = ">=3.14"
+dependencies = [
+    "numpy>=2.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.7",
+    "ty>=0.0.62,<0.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = ["src/**"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
