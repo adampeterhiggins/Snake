@@ -15,7 +15,7 @@ CenterIndex = int(math.floor(NumOfPixels / 2))
 CanvasCenter = [grid[CenterIndex], grid[CenterIndex]]
 BelowCenter = [grid[CenterIndex], grid[CenterIndex + 1]]  # One line below the center
 
-InitialBodyArray = [[CenterIndex, CenterIndex]]  # Initial posistion of snake
+InitialBodyArray = [np.array([CenterIndex, CenterIndex])]  # Initial posistion of snake
 InitialDirection = np.array([1, 0])
 
 global Direction, BodyArray, BodyLength, DeathValue
@@ -25,6 +25,7 @@ BodyLength = 1
 DeathValue = (
     1  # DeathValue Determines if the canvas is in "game" mode or in "Splashscreen mode", 1 for Splashscreen, 0 for game
 )
+TokenCoords: list[int]  # Bound inside begin() before the game loop starts
 
 tk = tkinter.Tk()
 tk.title("Snake")
@@ -50,7 +51,8 @@ def UpdateBody():
     while len(BodyArray) > BodyLength:
         BodyArray = [
             x % NumOfPixels for x in BodyArray[1:]
-        ]  # Using mod NumOfPixels so that the snake loops around the canvas, the % operation works because elements of BodyArray as numpy arrays
+        ]  # Using mod NumOfPixels so the snake loops around the canvas;
+        # the % operation works because elements of BodyArray are numpy arrays
 
 
 def UpdateBodyLength(parity):  # Updates length of body by parity
