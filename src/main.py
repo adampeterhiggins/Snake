@@ -4,167 +4,167 @@ from random import randint
 
 import numpy as np
 
-PixelSize: int = 40  # Half width of square pixels (shouldn't be lower than 8)
-NumOfPixels: int = 12  # Number of pixels creating the square canvas (shouldn't be lower than 12)
-Delay: int = 100  # Delay between refresh of canvas in miliseconds, the lower the delay, the more difficult the game is
+PIXEL_SIZE: int = 40  # Half width of square pixels (shouldn't be lower than 8)
+NUM_OF_PIXELS: int = 12  # Number of pixels creating the square canvas (shouldn't be lower than 12)
+DELAY: int = 100  # Delay between refresh of canvas in miliseconds, the lower the delay, the more difficult the game is
 
-CanvasSize = PixelSize * 2 * NumOfPixels
-grid = list(map(int, np.linspace(PixelSize, CanvasSize - PixelSize, NumOfPixels)))
+CANVAS_SIZE = PIXEL_SIZE * 2 * NUM_OF_PIXELS
+GRID = list(map(int, np.linspace(PIXEL_SIZE, CANVAS_SIZE - PIXEL_SIZE, NUM_OF_PIXELS)))
 
-CenterIndex = int(math.floor(NumOfPixels / 2))
-CanvasCenter = [grid[CenterIndex], grid[CenterIndex]]
-BelowCenter = [grid[CenterIndex], grid[CenterIndex + 1]]  # One line below the center
+CENTER_INDEX = int(math.floor(NUM_OF_PIXELS / 2))
+CANVAS_CENTER = [GRID[CENTER_INDEX], GRID[CENTER_INDEX]]
+BELOW_CENTER = [GRID[CENTER_INDEX], GRID[CENTER_INDEX + 1]]  # One line below the center
 
-InitialBodyArray = [np.array([CenterIndex, CenterIndex])]  # Initial posistion of snake
-InitialDirection = np.array([1, 0])
+INITIAL_BODY_ARRAY = [np.array([CENTER_INDEX, CENTER_INDEX])]  # Initial posistion of snake
+INITIAL_DIRECTION = np.array([1, 0])
 
-global Direction, BodyArray, BodyLength, DeathValue
-Direction: np.ndarray = InitialDirection
-BodyArray: list[np.ndarray] = InitialBodyArray  # Places snake in itial posistion
-BodyLength: int = 1
-DeathValue: int = 1  # 1 for "Splashscreen mode", 0 for "game" mode
-TokenCoords: list[int]  # Bound inside begin() before the game loop starts
+global direction, body_array, body_length, death_value
+direction: np.ndarray = INITIAL_DIRECTION
+body_array: list[np.ndarray] = INITIAL_BODY_ARRAY  # Places snake in itial posistion
+body_length: int = 1
+death_value: int = 1  # 1 for "Splashscreen mode", 0 for "game" mode
+token_coords: list[int]  # Bound inside begin() before the game loop starts
 
 tk = tkinter.Tk()
 tk.title("Snake")
 
-canvas = tkinter.Canvas(tk, width=CanvasSize, height=CanvasSize)
+canvas = tkinter.Canvas(tk, width=CANVAS_SIZE, height=CANVAS_SIZE)
 canvas.pack()
 
-canvas.create_text(CanvasCenter, text="Snake!")  # SplashScreen
-canvas.create_text(BelowCenter, text="Press Enter To Begin")
+canvas.create_text(CANVAS_CENTER, text="Snake!")  # SplashScreen
+canvas.create_text(BELOW_CENTER, text="Press Enter To Begin")
 
 
-def turn(dir: np.ndarray) -> None:
+def turn(new_direction: np.ndarray) -> None:
     """Ignore attempts to reverse direction."""
-    global Direction
-    if not np.array_equal(dir, (-1) * Direction):
-        Direction = dir
+    global direction
+    if not np.array_equal(new_direction, (-1) * direction):
+        direction = new_direction
 
 
-def UpdateBody() -> None:
-    """Advance the head along Direction and trim the body to BodyLength."""
-    global BodyArray
-    oldPos = BodyArray[-1]
-    newPos = (oldPos + Direction) % NumOfPixels
-    BodyArray = BodyArray + [newPos]
-    while len(BodyArray) > BodyLength:
-        BodyArray = [
-            x % NumOfPixels for x in BodyArray[1:]
-        ]  # Using mod NumOfPixels so the snake loops around the canvas;
-        # the % operation works because elements of BodyArray are numpy arrays
+def update_body() -> None:
+    """Advance the head along direction and trim the body to body_length."""
+    global body_array
+    old_pos = body_array[-1]
+    new_pos = (old_pos + direction) % NUM_OF_PIXELS
+    body_array = body_array + [new_pos]
+    while len(body_array) > body_length:
+        body_array = [
+            x % NUM_OF_PIXELS for x in body_array[1:]
+        ]  # Using mod NUM_OF_PIXELS so the snake loops around the canvas;
+        # the % operation works because elements of body_array are numpy arrays
 
 
-def UpdateBodyLength(parity: int) -> None:
+def update_body_length(parity: int) -> None:
     """Update the body length by parity, never below 1."""
-    global BodyLength
+    global body_length
     if parity == -1:
-        if BodyLength > 1:
-            BodyLength = BodyLength + parity
+        if body_length > 1:
+            body_length = body_length + parity
     else:
-        BodyLength = BodyLength + parity
+        body_length = body_length + parity
 
 
-def CheckDead() -> None:
+def check_dead() -> None:
     """End the game if the head overlaps the body."""
-    global DeathValue
-    if BodyLength > 1:
-        head = BodyArray[-1].tolist()
-        if head in [x.tolist() for x in BodyArray[0 : BodyLength - 1]]:
+    global death_value
+    if body_length > 1:
+        head = body_array[-1].tolist()
+        if head in [x.tolist() for x in body_array[0 : body_length - 1]]:
             canvas.delete("all")
-            canvas.create_text(CanvasCenter, text="Score: %s " % (BodyLength - 1))
-            canvas.create_text(BelowCenter, text="Press Enter To Play Again")
-            DeathValue = 1
+            canvas.create_text(CANVAS_CENTER, text="Score: %s " % (body_length - 1))
+            canvas.create_text(BELOW_CENTER, text="Press Enter To Play Again")
+            death_value = 1
 
 
-def GenerateTokenCoord() -> list[int]:
+def generate_token_coord() -> list[int]:
     """Random on-grid coords not occupied by the body."""
-    TokenProvisionalCoords = [randint(0, NumOfPixels - 1) for x in [0, 1]]
-    if TokenProvisionalCoords not in [
-        x.tolist() for x in BodyArray[0 : BodyLength - 1]
+    token_provisional_coords = [randint(0, NUM_OF_PIXELS - 1) for x in [0, 1]]
+    if token_provisional_coords not in [
+        x.tolist() for x in body_array[0 : body_length - 1]
     ]:  # To check that we haven't generated a token inside the body of the snake
-        return TokenProvisionalCoords
+        return token_provisional_coords
     else:
-        return GenerateTokenCoord()
+        return generate_token_coord()
 
 
-def EatToken() -> None:
+def eat_token() -> None:
     """Grow the body by one and respawn the token."""
-    global TokenCoords
-    UpdateBodyLength(1)
-    TokenCoords = GenerateTokenCoord()
+    global token_coords
+    update_body_length(1)
+    token_coords = generate_token_coord()
 
 
-def CheckToken() -> None:
+def check_token() -> None:
     """Eat the token if the head is on it."""
-    head = list(BodyArray[-1])
-    if np.array_equal(head, TokenCoords):
-        EatToken()
+    head = list(body_array[-1])
+    if np.array_equal(head, token_coords):
+        eat_token()
 
 
-def SquareVertices(Posistion: np.ndarray, size: int) -> list[int]:
-    """Corner coords of the square centred at Posistion with half-width size."""
-    a = [(Posistion + np.array([-size, -size])).tolist(), (Posistion + np.array([size, size])).tolist()]
+def square_vertices(position: np.ndarray, size: int) -> list[int]:
+    """Corner coords of the square centred at position with half-width size."""
+    a = [(position + np.array([-size, -size])).tolist(), (position + np.array([size, size])).tolist()]
     return [item + 3 for sublist in a for item in sublist]  # +3 to account for tkinter window top left padding
 
 
-def DrawBox(Posistion: np.ndarray | list[int], PixelSize: int, Colour: str) -> None:
-    """Draw a bordered square cell centred on grid position Posistion."""
-    InnerPixelSize = int(math.ceil(PixelSize / 2))
-    [Token_x, Token_y] = Posistion
-    TokenCenter = np.array([grid[Token_x], grid[Token_y]])
-    TokenOuterBox = SquareVertices(TokenCenter, PixelSize)
-    TokenInnerBox = SquareVertices(TokenCenter, InnerPixelSize)
-    canvas.create_rectangle(TokenOuterBox, fill="blue", width=0)
-    canvas.create_rectangle(TokenInnerBox, fill=Colour, width=0)
+def draw_box(position: np.ndarray | list[int], pixel_size: int, colour: str) -> None:
+    """Draw a bordered square cell centred on grid position."""
+    inner_pixel_size = int(math.ceil(pixel_size / 2))
+    [token_x, token_y] = position
+    token_center = np.array([GRID[token_x], GRID[token_y]])
+    token_outer_box = square_vertices(token_center, pixel_size)
+    token_inner_box = square_vertices(token_center, inner_pixel_size)
+    canvas.create_rectangle(token_outer_box, fill="blue", width=0)
+    canvas.create_rectangle(token_inner_box, fill=colour, width=0)
 
 
-def DrawBody() -> None:
+def draw_body() -> None:
     """Draw the snake; head orange, body yellow."""
-    for i, Pos in enumerate(BodyArray):
-        if i != len(BodyArray) - 1:  # The first block in the snake is orange, with the rest being yellow
-            DrawBox(Pos, PixelSize, "yellow")
+    for i, pos in enumerate(body_array):
+        if i != len(body_array) - 1:  # The first block in the snake is orange, with the rest being yellow
+            draw_box(pos, PIXEL_SIZE, "yellow")
         else:
-            DrawBox(Pos, PixelSize, "orange")
+            draw_box(pos, PIXEL_SIZE, "orange")
 
 
-def DrawBackground() -> None:
+def draw_background() -> None:
     """Draw the checkerboard background."""
-    for i in range(0, NumOfPixels):
-        for j in range(0, NumOfPixels):
+    for i in range(0, NUM_OF_PIXELS):
+        for j in range(0, NUM_OF_PIXELS):
             if (i + j) % 2 == 0:
-                Box = SquareVertices(np.array([int(grid[i]), int(grid[j])]), PixelSize)
-                canvas.create_rectangle(Box, fill="grey", outline="grey", width=0)
+                box = square_vertices(np.array([int(GRID[i]), int(GRID[j])]), PIXEL_SIZE)
+                canvas.create_rectangle(box, fill="grey", outline="grey", width=0)
 
 
-def DrawToken() -> None:
+def draw_token() -> None:
     """Draw the token cell."""
-    DrawBox(TokenCoords, PixelSize, "red")
+    draw_box(token_coords, PIXEL_SIZE, "red")
 
 
 def loop() -> None:
     """Run one game tick and reschedule while alive."""
     canvas.delete("all")
-    CheckToken()
-    UpdateBody()
-    DrawBackground()
-    DrawToken()
-    DrawBody()
-    CheckDead()
-    if DeathValue == 0:  # Iterate loop only when not dead
-        canvas.after(Delay, loop)
+    check_token()
+    update_body()
+    draw_background()
+    draw_token()
+    draw_body()
+    check_dead()
+    if death_value == 0:  # Iterate loop only when not dead
+        canvas.after(DELAY, loop)
 
 
 def begin(event: tkinter.Event) -> None:
     """Reset game state and start the loop."""
-    global TokenCoords, DeathValue, BodyArray, BodyLength, Direction
-    if DeathValue == 1:  # When dead, reset variables to initial state, regenerate token
-        BodyArray = InitialBodyArray
-        BodyLength = 1
-        Direction = InitialDirection
-        TokenCoords = GenerateTokenCoord()
-        DeathValue = 0
-        TokenCoords = GenerateTokenCoord()
+    global token_coords, death_value, body_array, body_length, direction
+    if death_value == 1:  # When dead, reset variables to initial state, regenerate token
+        body_array = INITIAL_BODY_ARRAY
+        body_length = 1
+        direction = INITIAL_DIRECTION
+        token_coords = generate_token_coord()
+        death_value = 0
+        token_coords = generate_token_coord()
         loop()
 
 
