@@ -109,7 +109,8 @@ class SnakeGame:
     def draw_body(self) -> None:
         """Draw the snake; head orange, body yellow."""
         for segment_index, segment_position in enumerate(self.body_array):
-            if segment_index != len(self.body_array) - 1:  # The first block in the snake is orange, with the rest being yellow
+            # The first block in the snake is orange, with the rest being yellow
+            if segment_index != len(self.body_array) - 1:
                 self.draw_box(position=segment_position, pixel_size=PIXEL_SIZE, colour="yellow")
             else:
                 self.draw_box(position=segment_position, pixel_size=PIXEL_SIZE, colour="orange")

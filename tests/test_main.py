@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from main import SnakeGame
+from main import NUM_OF_PIXELS, SnakeGame
 
 
 @pytest.fixture(name="game")
@@ -47,7 +47,7 @@ def test_update_body_trims_to_body_length(game: SnakeGame) -> None:
 
 def test_snake_wraps_off_right_edge(game: SnakeGame) -> None:
     """Head wraps from the right edge to column 0."""
-    game.body_array = [np.array(object=[game.NUM_OF_PIXELS - 1, 5])]
+    game.body_array = [np.array(object=[NUM_OF_PIXELS - 1, 5])]
     game.body_length = 1
     game.direction = np.array(object=[1, 0])
     game.update_body()
@@ -60,7 +60,7 @@ def test_snake_wraps_off_left_edge(game: SnakeGame) -> None:
     game.body_length = 1
     game.direction = np.array(object=[-1, 0])
     game.update_body()
-    assert game.body_array[-1].tolist() == [game.NUM_OF_PIXELS - 1, 5]
+    assert game.body_array[-1].tolist() == [NUM_OF_PIXELS - 1, 5]
 
 
 def test_update_body_length_never_drops_below_one(game: SnakeGame) -> None:
@@ -76,7 +76,7 @@ def test_generate_token_coordinate_within_grid_and_off_body(game: SnakeGame) -> 
     game.body_length = 2
     for _ in range(20):
         coordinate = game.generate_token_coordinate()
-        assert all(0 <= component < game.NUM_OF_PIXELS for component in coordinate)
+        assert all(0 <= component < NUM_OF_PIXELS for component in coordinate)
         assert coordinate not in [segment.tolist() for segment in game.body_array]
 
 
@@ -129,23 +129,23 @@ def test_eating_token_at_edge_keeps_head_on_grid(game: SnakeGame) -> None:
     # Regression test: eating grows body_length, so update_body used to skip
     # its trim branch — which was also where the % NUM_OF_PIXELS wrap lived —
     # leaving the head off-grid. The wrap must apply regardless of trimming.
-    game.body_array = [np.array(object=[game.NUM_OF_PIXELS - 1, 5])]
+    game.body_array = [np.array(object=[NUM_OF_PIXELS - 1, 5])]
     game.body_length = 1
     game.direction = np.array(object=[1, 0])
-    game.token_coordinates = [game.NUM_OF_PIXELS - 1, 5]
+    game.token_coordinates = [NUM_OF_PIXELS - 1, 5]
     game.check_token()
     game.update_body()
     head_x, _ = game.body_array[-1].tolist()
-    assert 0 <= head_x < game.NUM_OF_PIXELS
+    assert 0 <= head_x < NUM_OF_PIXELS
 
 
 def test_eating_token_at_edge_does_not_crash_draw(game: SnakeGame) -> None:
     """Eating a token on the edge does not crash draw_body."""
     # Reproduces the observed IndexError: GRID[cell_x] with cell_x == 12.
-    game.body_array = [np.array(object=[game.NUM_OF_PIXELS - 1, 5])]
+    game.body_array = [np.array(object=[NUM_OF_PIXELS - 1, 5])]
     game.body_length = 1
     game.direction = np.array(object=[1, 0])
-    game.token_coordinates = [game.NUM_OF_PIXELS - 1, 5]
+    game.token_coordinates = [NUM_OF_PIXELS - 1, 5]
     game.check_token()
     game.update_body()
     game.draw_body()
