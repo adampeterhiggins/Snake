@@ -9,6 +9,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pytest>=8.3.0",
     "ruff>=0.9.7",
     "ty>=0.0.62,<0.1",
 ]
@@ -25,3 +26,6 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
