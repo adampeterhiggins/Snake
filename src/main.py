@@ -46,7 +46,7 @@ def turn(dir):
 def UpdateBody():
     global BodyArray
     oldPos = BodyArray[-1]
-    newPos = oldPos + Direction
+    newPos = (oldPos + Direction) % NumOfPixels
     BodyArray = BodyArray + [newPos]
     while len(BodyArray) > BodyLength:
         BodyArray = [

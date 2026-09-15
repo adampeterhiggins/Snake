@@ -19,3 +19,6 @@ typecheck:
 
 check:
 	$(MAKE) lint typecheck
+
+test:
+	uv run pytest
